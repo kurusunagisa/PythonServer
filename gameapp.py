@@ -5,13 +5,15 @@ import secrets
 import string
 import json
 
+# TODO : エラー処理(どうやるんだ)
+
 app = Flask(__name__)
 
 connect = pymysql.connect(host='localhost', user='root',password=key.key, db='gamedb', autocommit=True, cursorclass=pymysql.cursors.DictCursor)
 
 db = connect.cursor();
 
-@app.url_value_preprocessor  # @app.routeが呼び出されたときに関数に入る前に呼び出されるメソッド
+@app.url_value_preprocessor  # @app.routeが呼び出されたときに関数に入る前に呼び出されるメソッド パス変数を作ってるっぽい？
 def GetUserData(endpoint, values):  # jsonデータを受け取って渡すだけ
   print(endpoint, values)
   # リクエストごとに処理を分ける
