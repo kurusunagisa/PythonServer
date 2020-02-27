@@ -27,6 +27,8 @@ def GetUserData(endpoint, values):  # jsonデータを受け取って渡すだ�
     data = request.get_data()
     values["name"] = json.loads(data)
     values["token"] = request.headers.get("x-token")
+  elif (endpoint == "GachaDrawRequest"):
+    values["times"] = json.loads(data)
   #values["token"] = json.loads(data)
 
 @app.route('/user/create', methods=['POST',])
@@ -36,7 +38,7 @@ def UserCreateRequest(name):
   for _ in range(20):
     token += str(secrets.choice(string.ascii_letters))
   print(token)
-  db.execute('INSERT INTO user (NAME, TOKEN) VALUES (%s,%s)',(name['token'],token))
+  db.execute('INSERT INTO users (name, token) VALUES (%s,%s)',(name['token'],token))
   return UserCreateResponse(token)
 
 def UserCreateResponse(token):
@@ -44,15 +46,31 @@ def UserCreateResponse(token):
 
 @app.route('/user/get', methods=['GET'],)
 def UserGetResponse(token):
-  db.execute('SELECT NAME FROM user WHERE TOKEN=%s', (token)) #SQLの実行
+  db.execute('SELECT name FROM users WHERE token=%s', (token)) #SQLの実行
   print("token : ", token)
-  return db.fetchone() #SQLの出力をフェッチ
+  return db.fetchone()  # SQLの出力をフェッチ
 
 @app.route('/user/update', methods=['PUT'])
 def UserUpdateRequest(name, token):
   print(name['name'] , token)
-  db.execute('UPDATE user SET NAME=%s WHERE TOKEN=%s', (name['name'], token))
+  db.execute('UPDATE users SET name=%s WHERE name=%s', (name['name'], token))
   return ""
+
+@app.route('/gacha/draw', methods=['POST'])
+def GachaDrawRequest(times):
+  result = []
+  for _ in times['times']:
+    result.append(GachaDrawResponse)
+  return json.dumps(result)
+
+def GachaDrawResponse():
+  return GachaResult()
+
+def GachaResult():
+  rare = secrets.randbelow(2)
+  db.execute('SELECT name FROM users WHERE token=%s', (rare))  # SQLの実行
+  return db.fetchone
+
 
 if __name__ == '__main__':
   #token = UserCreateRequest('{"token": "名取さな"}')
